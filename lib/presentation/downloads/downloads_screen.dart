@@ -1,8 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sample_project/application/downloads/download_bloc.dart';
 import 'package:sample_project/core/colors/colors.dart';
 import 'package:sample_project/core/colors/constants.dart';
+import 'package:sample_project/core/string.dart';
 import 'package:sample_project/widgets/app_bar_widget.dart';
 
 class DownloadsScreen extends StatelessWidget {
@@ -26,10 +29,9 @@ class DownloadsScreen extends StatelessWidget {
   }
 }
 
+// ignore: camel_case_types
 class _smartDownloads extends StatelessWidget {
-  const _smartDownloads({
-    super.key,
-  });
+  const _smartDownloads();
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class _smartDownloads extends StatelessWidget {
         kWidth(10),
         const Icon(Icons.settings),
         kWidth(10),
-        const Text("Smart Downlaods")
+        const Text("Smart Downloads")
       ],
     );
   }
@@ -76,56 +78,68 @@ class DownloadImageWidget extends StatelessWidget {
 }
 
 class Section2 extends StatelessWidget {
-  Section2({super.key});
-  final images = [
-    "https://m.media-amazon.com/images/M/MV5BNGQ2MTc1MGUtNTIxZS00ZmIwLTkyYWUtMzViM2U5NmEyOWE2XkEyXkFqcGdeQXVyMDA4NzMyOA@@._V1_.jpg"
-  ];
+  const Section2({super.key});
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      BlocProvider.of<DownloadBloc>(context)
+          .add(const DownloadEvent.getDownloadsImage());
+    });
     final size = MediaQuery.of(context).size;
 
     return Column(
       children: [
         kHeight(10),
         const Text(
-          "Indroducing Downloads for you",
+          "Introducing Downloads for you",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         kHeight(10),
         const Text(
           textAlign: TextAlign.center,
-          "We will download a personalised selection of movies and shoes for you, so there is always somthing to whatch on your device",
+          "We will download a personalized selection of movies and shoes for you, so there is always soothing to watch on your device",
           style: TextStyle(fontSize: 20),
         ),
-        Container(
-          height: size.height * 0.5,
-          width: size.width * 0.5,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                radius: size.height * 0.18,
-                backgroundColor: Colors.grey.shade800,
-              ),
-              DownloadImageWidget(
-                angle: 20,
-                image: images[0],
-                margin: const EdgeInsets.only(left: 130),
-              ),
-              DownloadImageWidget(
-                angle: -20,
-                image: images[0],
-                margin: const EdgeInsets.only(right: 130),
-              ),
-              DownloadImageWidget(
-                angle: 0,
-                image: images[0],
-                margin: const EdgeInsets.only(),
-              ),
-            ],
-          ),
+        BlocBuilder<DownloadBloc, DownloadState>(
+          builder: (context, state) {
+            return SizedBox(
+              height: size.height * 0.5,
+              width: size.width * 0.5,
+              child: state.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: size.height * 0.18,
+                          backgroundColor: Colors.grey.shade800,
+                        ),
+                        DownloadImageWidget(
+                          angle: 20,
+                          image:
+                              "$imageAppendUrl${state.downloads[0].posterPath}",
+                          margin: const EdgeInsets.only(left: 130),
+                        ),
+                        DownloadImageWidget(
+                          angle: -20,
+                          image:
+                              "$imageAppendUrl${state.downloads[1].posterPath}",
+                          margin: const EdgeInsets.only(right: 130),
+                        ),
+                        DownloadImageWidget(
+                          angle: 0,
+                          image:
+                              "$imageAppendUrl${state.downloads[2].posterPath}",
+                          margin: const EdgeInsets.only(),
+                        ),
+                      ],
+                    ),
+            );
+          },
         )
       ],
     );
